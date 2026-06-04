@@ -1,6 +1,6 @@
 <?php
-// Start session for status alerts
-session_start();
+// Require authentication
+require_once 'auth.php';
 
 // Import database configuration
 require_once 'config.php';
@@ -14,7 +14,7 @@ if (!isset($pdo)) {
 // Check if ID parameter is provided
 if (!isset($_GET['id']) || trim($_GET['id']) === '') {
     $_SESSION['error'] = "ID Hewan tidak ditentukan!";
-    header("Location: index.php");
+    header("Location: dashboard.php");
     exit;
 }
 
@@ -28,12 +28,12 @@ try {
     
     if (!$hewan) {
         $_SESSION['error'] = "Data hewan tidak ditemukan!";
-        header("Location: index.php");
+        header("Location: dashboard.php");
         exit;
     }
 } catch (PDOException $e) {
     $_SESSION['error'] = "Gagal mengambil data hewan: " . $e->getMessage();
-    header("Location: index.php");
+    header("Location: dashboard.php");
     exit;
 }
 
@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
                 
                 $_SESSION['success'] = "Data hewan '$nama_hewan' berhasil diubah!";
-                header("Location: index.php");
+                header("Location: dashboard.php");
                 exit;
             }
         } catch (PDOException $e) {
@@ -103,7 +103,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 
-<div class="container" style="max-width: 600px;">
+<!-- Navigation Bar -->
+<nav class="main-navbar">
+    <div class="nav-container">
+        <a href="dashboard.php" class="nav-brand">
+            <span>🐾</span> BelajarRelasi
+        </a>
+        <ul class="nav-menu">
+            <li><a href="dashboard.php" class="nav-link">Dashboard</a></li>
+            <li><a href="tambah.php" class="nav-link">Tambah Hewan</a></li>
+        </ul>
+        <div class="nav-right">
+            <div class="nav-user">
+                <span>Halo, </span>
+                <span class="user-badge"><?= htmlspecialchars($_SESSION['user']['nama_lengkap']); ?></span>
+            </div>
+            <a href="logout.php" class="btn btn-logout btn-sm">Keluar</a>
+        </div>
+    </div>
+</nav>
+
+<div class="page-wrapper">
+    <div class="container" style="max-width: 600px;">
     <!-- Header -->
     <header>
         <div class="brand">
@@ -162,13 +183,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <!-- Form Actions -->
             <div class="form-actions">
-                <a href="index.php" class="btn btn-secondary">Batal</a>
+                <a href="dashboard.php" class="btn btn-secondary">Batal</a>
                 <button type="submit" class="btn btn-primary">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
                     Simpan Perubahan
                 </button>
             </div>
         </form>
+    </div>
     </div>
 </div>
 

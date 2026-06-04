@@ -1,6 +1,6 @@
 <?php
-// Start session for status alerts
-session_start();
+// Require authentication
+require_once 'auth.php';
 
 // Import database configuration
 require_once 'config.php';
@@ -14,14 +14,14 @@ if (!isset($pdo)) {
 // Security check: Only allow POST requests for deletion to prevent CSRF and accidental deletes
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     $_SESSION['error'] = "Metode penghapusan tidak valid!";
-    header("Location: index.php");
+    header("Location: dashboard.php");
     exit;
 }
 
 // Check if id_hewan is provided
 if (!isset($_POST['id_hewan']) || trim($_POST['id_hewan']) === '') {
     $_SESSION['error'] = "ID Hewan tidak ditentukan!";
-    header("Location: index.php");
+    header("Location: dashboard.php");
     exit;
 }
 
@@ -35,7 +35,7 @@ try {
     
     if (!$nama_hewan) {
         $_SESSION['error'] = "Data hewan tidak ditemukan!";
-        header("Location: index.php");
+        header("Location: dashboard.php");
         exit;
     }
     
@@ -49,5 +49,5 @@ try {
 }
 
 // Redirect back to main dashboard
-header("Location: index.php");
+header("Location: dashboard.php");
 exit;

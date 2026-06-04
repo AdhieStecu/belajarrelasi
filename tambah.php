@@ -1,6 +1,6 @@
 <?php
-// Start session for status alerts
-session_start();
+// Require authentication
+require_once 'auth.php';
 
 // Import database configuration
 require_once 'config.php';
@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
                 
                 $_SESSION['success'] = "Data hewan '$nama_hewan' berhasil ditambahkan!";
-                header("Location: index.php");
+                header("Location: dashboard.php");
                 exit;
             }
         } catch (PDOException $e) {
@@ -76,7 +76,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 
-<div class="container" style="max-width: 600px;">
+<!-- Navigation Bar -->
+<nav class="main-navbar">
+    <div class="nav-container">
+        <a href="dashboard.php" class="nav-brand">
+            <span>🐾</span> BelajarRelasi
+        </a>
+        <ul class="nav-menu">
+            <li><a href="dashboard.php" class="nav-link">Dashboard</a></li>
+            <li><a href="tambah.php" class="nav-link active">Tambah Hewan</a></li>
+        </ul>
+        <div class="nav-right">
+            <div class="nav-user">
+                <span>Halo, </span>
+                <span class="user-badge"><?= htmlspecialchars($_SESSION['user']['nama_lengkap']); ?></span>
+            </div>
+            <a href="logout.php" class="btn btn-logout btn-sm">Keluar</a>
+        </div>
+    </div>
+</nav>
+
+<div class="page-wrapper">
+    <div class="container" style="max-width: 600px;">
     <!-- Header -->
     <header>
         <div class="brand">
@@ -133,13 +154,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <!-- Form Actions -->
             <div class="form-actions">
-                <a href="index.php" class="btn btn-secondary">Batal</a>
+                <a href="dashboard.php" class="btn btn-secondary">Batal</a>
                 <button type="submit" class="btn btn-primary">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                     Simpan Data
                 </button>
             </div>
         </form>
+    </div>
     </div>
 </div>
 
