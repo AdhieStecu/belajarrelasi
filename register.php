@@ -23,9 +23,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = isset($_POST['username']) ? trim($_POST['username']) : '';
     $password = isset($_POST['password']) ? trim($_POST['password']) : '';
     $confirm_password = isset($_POST['confirm_password']) ? trim($_POST['confirm_password']) : '';
+    $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
     
     // Server-side validation
-    if ($nama_lengkap === '' || $username === '' || $password === '' || $confirm_password === '') {
+    if (!validate_csrf_token($csrf_token)) {
+        $error_msg = "Keamanan CSRF tidak valid. Silakan muat ulang halaman.";
+    } elseif ($nama_lengkap === '' || $username === '' || $password === '' || $confirm_password === '') {
         $error_msg = "Semua bidang formulir wajib diisi!";
     } elseif (strlen($username) < 3) {
         $error_msg = "Username minimal harus 3 karakter!";
@@ -72,6 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- CSS Stylesheet -->
     <link rel="stylesheet" href="style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         body {
             display: flex;
@@ -160,33 +165,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- Form -->
     <form method="POST" action="register.php">
+        <?php csrf_input(); ?>
         <div class="form-group">
             <label for="nama_lengkap">Nama Lengkap</label>
             <input type="text" id="nama_lengkap" name="nama_lengkap" class="form-control" placeholder="Nama Anda" value="<?= isset($_POST['nama_lengkap']) ? htmlspecialchars($_POST['nama_lengkap']) : ''; ?>" required>
         </div>
-
+ 
         <div class="form-group">
             <label for="username">Username</label>
             <input type="text" id="username" name="username" class="form-control" placeholder="Pilih username" value="<?= isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>" required autocomplete="username">
         </div>
-
+ 
         <div class="form-group">
             <label for="password">Password (Minimal 6 karakter)</label>
             <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required autocomplete="new-password">
         </div>
-
+ 
         <div class="form-group" style="margin-bottom: 2rem;">
             <label for="confirm_password">Konfirmasi Password</label>
             <input type="password" id="confirm_password" name="confirm_password" class="form-control" placeholder="••••••••" required autocomplete="new-password">
         </div>
-
+ 
         <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem;">Daftar Akun</button>
     </form>
-
+ 
     <div class="auth-footer">
         Sudah punya akun? <a href="login.php">Masuk disini</a>
     </div>
 </div>
-
+ 
+<script>
+    lucide.createIcons();
+</script>
 </body>
 </html>

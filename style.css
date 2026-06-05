@@ -810,6 +810,130 @@ select.form-control {
     color: var(--text-primary);
 }
 
+/* Stats and Charts Layout */
+.stats-charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    align-items: stretch;
+}
+
+.stats-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    justify-content: space-between;
+}
+
+.stats-col .stat-card {
+    margin-bottom: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+}
+
+.stat-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.chart-card-container {
+    margin-bottom: 0 !important;
+    padding: 1.5rem !important;
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.chart-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chart-canvases {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 1.5rem;
+    align-items: center;
+    flex: 1;
+    min-height: 180px;
+}
+
+.canvas-wrapper {
+    position: relative;
+    height: 180px;
+    width: 100%;
+}
+
+/* Pet Avatar Styles */
+.pet-avatar-wrapper {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s ease;
+}
+
+.pet-avatar-wrapper:hover {
+    transform: scale(1.1);
+    border-color: var(--primary-color);
+}
+
+.pet-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Glassmorphism improvements & micro-interactions */
+.main-navbar .nav-link i, .main-navbar .btn i {
+    transition: transform 0.2s ease;
+}
+
+.main-navbar .nav-link:hover i {
+    transform: translateY(-1px);
+}
+
+/* Responsive updates for Charts */
+@media (max-width: 900px) {
+    .stats-charts-grid {
+        grid-template-columns: 1fr;
+    }
+    .chart-canvases {
+        grid-template-columns: 1fr;
+        height: auto;
+        min-height: auto;
+        gap: 2rem;
+    }
+    .canvas-wrapper {
+        height: 160px;
+    }
+}
+
 /* Responsive Media Queries */
 @media (max-width: 768px) {
     .hero-section {
@@ -851,4 +975,438 @@ select.form-control {
         text-align: center;
     }
 }
+
+/* ==========================================
+   PetRelasi Premium Interface Additions
+   ========================================== */
+
+/* Dashboard Two-Column Grid */
+.dashboard-content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1.05fr;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    align-items: start;
+}
+
+@media (max-width: 950px) {
+    .dashboard-content-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Modals General Style */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(4, 7, 15, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-card {
+    background: #0d1326;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    width: 90%;
+    max-width: 520px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    transform: scale(0.95);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+}
+
+.modal-overlay.active .modal-card {
+    transform: scale(1);
+}
+
+.modal-card-header {
+    padding: 1.25rem 1.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-card-header h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.modal-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.75rem;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.modal-close-btn:hover {
+    color: #ffffff;
+}
+
+.modal-card-body {
+    padding: 1.75rem;
+}
+
+/* Holographic KTP Peliharaan */
+.ktp-card-hologram {
+    width: 100%;
+    max-width: 480px;
+    height: 288px;
+    background: linear-gradient(135deg, #090e1a 0%, #0e172e 50%, #1b2a4a 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    position: relative;
+    overflow: hidden;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    transform-style: preserve-3d;
+    perspective: 1000px;
+    transition: transform 0.1s ease;
+}
+
+.ktp-card-glare {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 5;
+    mix-blend-mode: overlay;
+    transition: background 0.1s ease;
+}
+
+.ktp-card-header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 0.5rem;
+}
+
+.ktp-card-logo {
+    font-weight: 700;
+    font-size: 0.95rem;
+    background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.ktp-card-chip {
+    width: 34px;
+    height: 24px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border-radius: 4px;
+    position: relative;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.ktp-card-chip::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 6px;
+    right: 6px;
+    bottom: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+}
+
+.ktp-card-content {
+    display: flex;
+    gap: 1.25rem;
+    margin-top: 0.75rem;
+    align-items: flex-start;
+    flex: 1;
+}
+
+.ktp-avatar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ktp-avatar-placeholder {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.ktp-signature {
+    font-size: 0.55rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.ktp-info-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.ktp-info-row {
+    display: flex;
+    font-size: 0.7rem;
+    line-height: 1.3;
+}
+
+.ktp-label {
+    width: 65px;
+    color: var(--text-secondary);
+    font-weight: 700;
+}
+
+.ktp-value {
+    flex: 1;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.ktp-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 0.5rem;
+}
+
+.ktp-card-id {
+    font-family: monospace;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.ktp-qrcode {
+    width: 44px;
+    height: 44px;
+    background: #ffffff;
+    padding: 3px;
+    border-radius: 4px;
+}
+
+.qr-inner-box {
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(circle, #080d1a 25%, transparent 26%),
+        linear-gradient(45deg, #080d1a 25%, transparent 25%),
+        linear-gradient(-45deg, #080d1a 25%, transparent 25%);
+    background-size: 6px 6px;
+    background-color: #ffffff;
+}
+
+/* Care Tracker Timeline styling */
+.care-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: 380px;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+}
+
+/* Scrollbar styling for timeline */
+.care-timeline::-webkit-scrollbar {
+    width: 4px;
+}
+.care-timeline::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.02);
+}
+.care-timeline::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+}
+
+.timeline-item {
+    display: flex;
+    gap: 0.75rem;
+    position: relative;
+    padding-left: 0.5rem;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 14px;
+    top: 20px;
+    bottom: -15px;
+    width: 1.5px;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.timeline-item:last-child::before {
+    display: none;
+}
+
+.timeline-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    margin-top: 6px;
+    flex-shrink: 0;
+    border: 2px solid var(--bg-color);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+    z-index: 2;
+}
+
+.timeline-item.status-selesai .timeline-dot {
+    background: var(--success-color);
+    box-shadow: 0 0 8px var(--success-glow);
+}
+
+.timeline-item.status-pending .timeline-dot {
+    background: var(--warning-color);
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.25);
+}
+
+.timeline-content-wrapper {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    transition: all 0.2s ease;
+}
+
+.timeline-item:hover .timeline-content-wrapper {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.timeline-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.timeline-pet {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #a5b4fc;
+}
+
+.timeline-date {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.timeline-activity {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+}
+
+.timeline-item.status-selesai .timeline-activity {
+    text-decoration: line-through;
+    color: var(--text-muted);
+}
+
+.timeline-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    padding-top: 0.4rem;
+}
+
+.btn-timeline-action {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.btn-timeline-complete {
+    color: var(--success-color);
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.btn-timeline-complete:hover {
+    color: #ffffff;
+    background: var(--success-color);
+}
+
+.btn-timeline-delete {
+    color: var(--text-muted);
+}
+
+.btn-timeline-delete:hover {
+    color: #ffffff;
+    background: rgba(239, 68, 68, 0.2);
+}
+
+.badge-selesai-text {
+    font-size: 0.75rem;
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+/* Glowing paw cursor trail styling */
+.paw-trail {
+    position: absolute;
+    pointer-events: none;
+    font-size: 16px;
+    z-index: 9999;
+    opacity: 0.85;
+    transform: translate(-50%, -50%) scale(1);
+    animation: fadeAndShrink 0.85s ease-out forwards;
+    filter: drop-shadow(0 0 5px #818cf8);
+}
+
+@keyframes fadeAndShrink {
+    0% {
+        opacity: 0.85;
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.2) rotate(20deg);
+    }
+}
+
 

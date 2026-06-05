@@ -21,8 +21,11 @@ if (isset($_SESSION['user'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = isset($_POST['username']) ? trim($_POST['username']) : '';
     $password = isset($_POST['password']) ? trim($_POST['password']) : '';
+    $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
     
-    if ($username === '' || $password === '') {
+    if (!validate_csrf_token($csrf_token)) {
+        $error_msg = "Keamanan CSRF tidak valid. Silakan muat ulang halaman.";
+    } elseif ($username === '' || $password === '') {
         $error_msg = "Username dan password wajib diisi!";
     } else {
         try {
@@ -64,6 +67,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- CSS Stylesheet -->
     <link rel="stylesheet" href="style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         body {
             display: flex;
@@ -166,23 +171,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- Form -->
     <form method="POST" action="login.php">
+        <?php csrf_input(); ?>
         <div class="form-group">
             <label for="username">Username</label>
             <input type="text" id="username" name="username" class="form-control" placeholder="admin" value="<?= isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>" required autocomplete="username">
         </div>
-
+ 
         <div class="form-group" style="margin-bottom: 2rem;">
             <label for="password">Password</label>
             <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
         </div>
-
+ 
         <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem;">Masuk Sekarang</button>
     </form>
-
+ 
     <div class="auth-footer">
         Belum punya akun? <a href="register.php">Daftar disini</a>
     </div>
 </div>
 
+<script>
+    lucide.createIcons();
+</script>
 </body>
 </html>

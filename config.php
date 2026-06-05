@@ -30,3 +30,7 @@ try {
     // For development, we store the error code/message to display in our test utility.
     $connection_error = $e->getMessage();
 }
+
+// Load CSRF utility
+require_once 'csrf.php';
+

@@ -28,12 +28,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nama_hewan = isset($_POST['nama_hewan']) ? trim($_POST['nama_hewan']) : '';
     $umur = isset($_POST['umur']) ? trim($_POST['umur']) : '';
     $id_ras = isset($_POST['id_ras']) ? trim($_POST['id_ras']) : '';
+    $berat_badan = isset($_POST['berat_badan']) ? trim($_POST['berat_badan']) : '';
+    $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
     
     // Server-side validation
-    if ($nama_hewan === '' || $umur === '' || $id_ras === '') {
+    if (!validate_csrf_token($csrf_token)) {
+        $error_msg = "Keamanan CSRF tidak valid. Silakan coba lagi.";
+    } elseif ($nama_hewan === '' || $umur === '' || $id_ras === '' || $berat_badan === '') {
         $error_msg = "Semua bidang formulir wajib diisi!";
     } elseif (!is_numeric($umur) || intval($umur) < 0) {
         $error_msg = "Umur harus berupa angka positif!";
+    } elseif (!is_numeric($berat_badan) || floatval($berat_badan) <= 0) {
+        $error_msg = "Berat badan harus berupa angka positif!";
     } else {
         try {
             // Check if selected breed exists
@@ -43,12 +49,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error_msg = "Ras hewan yang dipilih tidak valid!";
             } else {
                 // Insert new pet record
-                $insert_query = "INSERT INTO hewan (nama_hewan, umur, id_ras) VALUES (:nama, :umur, :id_ras)";
+                $insert_query = "INSERT INTO hewan (nama_hewan, umur, id_ras, berat_badan) VALUES (:nama, :umur, :id_ras, :berat_badan)";
                 $insert_stmt = $pdo->prepare($insert_query);
                 $insert_stmt->execute([
                     'nama' => $nama_hewan,
                     'umur' => intval($umur),
-                    'id_ras' => intval($id_ras)
+                    'id_ras' => intval($id_ras),
+                    'berat_badan' => floatval($berat_badan)
                 ]);
                 
                 $_SESSION['success'] = "Data hewan '$nama_hewan' berhasil ditambahkan!";
@@ -73,6 +80,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- CSS Stylesheet -->
     <link rel="stylesheet" href="style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
@@ -80,18 +89,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <nav class="main-navbar">
     <div class="nav-container">
         <a href="dashboard.php" class="nav-brand">
-            <span>🐾</span> BelajarRelasi
+            <span>🐾</span> PetRelasi
         </a>
         <ul class="nav-menu">
-            <li><a href="dashboard.php" class="nav-link">Dashboard</a></li>
-            <li><a href="tambah.php" class="nav-link active">Tambah Hewan</a></li>
+            <li><a href="dashboard.php" class="nav-link"><i data-lucide="layout-dashboard" style="width: 16px; height: 16px;"></i> Dashboard</a></li>
+            <li><a href="kelola_relasi.php" class="nav-link"><i data-lucide="git-branch" style="width: 16px; height: 16px;"></i> Kelola Relasi</a></li>
+            <li><a href="ensiklopedia.php" class="nav-link"><i data-lucide="book-open" style="width: 16px; height: 16px;"></i> Ensiklopedia</a></li>
+            <li><a href="tambah.php" class="nav-link active"><i data-lucide="plus-circle" style="width: 16px; height: 16px;"></i> Tambah Hewan</a></li>
         </ul>
         <div class="nav-right">
-            <div class="nav-user">
+            <a href="profile.php" class="nav-user" style="text-decoration: none;">
                 <span>Halo, </span>
-                <span class="user-badge"><?= htmlspecialchars($_SESSION['user']['nama_lengkap']); ?></span>
-            </div>
-            <a href="logout.php" class="btn btn-logout btn-sm">Keluar</a>
+                <span class="user-badge"><i data-lucide="user" style="width: 14px; height: 14px; display: inline; vertical-align: middle; margin-right: 4px;"></i><?= htmlspecialchars($_SESSION['user']['nama_lengkap']); ?></span>
+            </a>
+            <a href="logout.php" class="btn btn-logout btn-sm"><i data-lucide="log-out" style="width: 14px; height: 14px;"></i> Keluar</a>
         </div>
     </div>
 </nav>
@@ -109,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Error Alert -->
     <?php if (isset($error_msg)): ?>
         <div class="alert alert-danger">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <i data-lucide="alert-circle" style="width: 20px; height: 20px;"></i>
             <?= htmlspecialchars($error_msg); ?>
         </div>
     <?php endif; ?>
@@ -117,16 +128,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Form Card -->
     <div class="card">
         <form method="POST" action="tambah.php">
+            <?php csrf_input(); ?>
             <!-- Animal Name -->
             <div class="form-group">
                 <label for="nama_hewan">Nama Hewan</label>
-                <input type="text" id="nama_hewan" name="nama_hewan" class="form-control" placeholder="Contoh: Milo, Bleki" value="<?= isset($_POST['nama_hewan']) ? htmlspecialchars($_POST['nama_hewan']) : ''; ?>" required>
+                <input type="text" id="nama_hewan" name="nama_hewan" class="form-control" placeholder="Contoh: Milo, Bleki" value="<?= isset($_POST['nama_hewan']) ? htmlspecialchars($_POST['nama_hewan']) : ''; ?>" required autocomplete="off">
             </div>
 
             <!-- Animal Age -->
             <div class="form-group">
                 <label for="umur">Umur (Bulan)</label>
                 <input type="number" id="umur" name="umur" class="form-control" placeholder="Contoh: 12" min="0" value="<?= isset($_POST['umur']) ? htmlspecialchars($_POST['umur']) : ''; ?>" required>
+            </div>
+
+            <!-- Animal Weight -->
+            <div class="form-group">
+                <label for="berat_badan">Berat Badan (Kg)</label>
+                <input type="number" step="0.1" id="berat_badan" name="berat_badan" class="form-control" placeholder="Contoh: 4.5" min="0.1" value="<?= isset($_POST['berat_badan']) ? htmlspecialchars($_POST['berat_badan']) : ''; ?>" required>
             </div>
 
             <!-- Animal Breed (Relational) -->
@@ -156,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-actions">
                 <a href="dashboard.php" class="btn btn-secondary">Batal</a>
                 <button type="submit" class="btn btn-primary">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <i data-lucide="save" style="width: 18px; height: 18px;"></i>
                     Simpan Data
                 </button>
             </div>
@@ -165,5 +183,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 
+<script>
+    lucide.createIcons();
+</script>
 </body>
 </html>

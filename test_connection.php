@@ -2,6 +2,56 @@
 // Include the database configuration
 require_once 'config.php';
 
+// Handle automatic database initialization/seeding
+$setup_error = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'setup_db') {
+    try {
+        // Connect to MySQL server without specifying database name first
+        $dsn_no_db = "mysql:host=" . DB_HOST . ";charset=" . DB_CHARSET;
+        $temp_pdo = new PDO($dsn_no_db, DB_USER, DB_PASS, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+        ]);
+        
+        // Create database if not exists
+        $temp_pdo->exec("CREATE DATABASE IF NOT EXISTS `" . DB_NAME . "` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
+        
+        // Connect to the newly created database
+        $temp_pdo->exec("USE `" . DB_NAME . "`");
+        
+        // Read database.sql
+        $sql_file = __DIR__ . '/database.sql';
+        if (file_exists($sql_file)) {
+            $sql = file_get_contents($sql_file);
+            
+            // Execute the entire database.sql schema and seed in one go
+            $temp_pdo->exec($sql);
+            $_SESSION['success'] = "Database dan tabel berhasil diinisialisasi secara otomatis!";
+        } else {
+            $_SESSION['success'] = "Database berhasil dibuat, tetapi berkas database.sql tidak ditemukan.";
+        }
+        
+        header("Location: test_connection.php");
+        exit;
+    } catch (PDOException $e) {
+        $setup_error = "Gagal memproses inisialisasi database: " . $e->getMessage();
+    }
+}
+
+// Re-check connection status (it might have succeeded after setup)
+// Reload config.php connection
+try {
+    $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
+    $options = [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES   => false,
+    ];
+    $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+    unset($connection_error);
+} catch (PDOException $e) {
+    $connection_error = $e->getMessage();
+}
+
 $is_success = isset($pdo) && !isset($connection_error);
 $error_msg = isset($connection_error) ? $connection_error : '';
 $db_created = true;
@@ -10,9 +60,20 @@ $db_created = true;
 if (!$is_success && strpos(strtolower($error_msg), "unknown database") !== false) {
     $db_created = false;
 }
+
+$tables_exist = false;
+if ($is_success) {
+    try {
+        $stmt = $pdo->query("SHOW TABLES LIKE 'hewan'");
+        $tables_exist = ($stmt->fetch() !== false);
+    } catch (PDOException $e) {
+        $tables_exist = false;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -302,11 +363,31 @@ if (!$is_success && strpos(strtolower($error_msg), "unknown database") !== false
             <p>Konfigurasi Database Peliharaan</p>
         </div>
 
-        <?php if ($is_success): ?>
+        <!-- Alerts -->
+        <?php if (isset($_SESSION['success'])): ?>
+            <div class="status-container" style="background: var(--success-glow); border: 1px solid rgba(16, 185, 129, 0.2); margin-bottom: 1.5rem; padding: 1rem; border-radius: 12px;">
+                <div style="color: #a7f3d0; font-size: 0.9rem; font-weight: 500;"><?= htmlspecialchars($_SESSION['success']); ?></div>
+            </div>
+            <?php unset($_SESSION['success']); ?>
+        <?php endif; ?>
+
+        <?php if ($setup_error !== ''): ?>
+            <div class="status-container" style="background: var(--error-glow); border: 1px solid rgba(239, 68, 68, 0.2); margin-bottom: 1.5rem; padding: 1rem; border-radius: 12px;">
+                <div style="color: #fecaca; font-size: 0.9rem; font-weight: 500;"><?= htmlspecialchars($setup_error); ?></div>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($is_success && $tables_exist): ?>
             <div class="status-container">
                 <div class="status-icon">✓</div>
                 <div class="status-title">Koneksi Berhasil!</div>
-                <div class="status-desc">PHP berhasil terhubung ke database <strong><?php echo DB_NAME; ?></strong> menggunakan driver PDO.</div>
+                <div class="status-desc">PHP berhasil terhubung ke database <strong><?php echo DB_NAME; ?></strong> dan semua tabel siap digunakan.</div>
+            </div>
+        <?php elseif ($is_success && !$tables_exist): ?>
+            <div class="status-container" style="background: var(--warning-glow); border: 1px solid rgba(245, 158, 11, 0.2);">
+                <div class="status-icon" style="background-color: var(--warning-color); box-shadow: 0 0 20px rgba(245, 158, 11, 0.4); color: white;">!</div>
+                <div class="status-title" style="color: #fde68a;">Tabel Belum Dibuat</div>
+                <div class="status-desc">Terhubung ke database <strong><?php echo DB_NAME; ?></strong>, tetapi tabel-tabel relasi belum dibuat.</div>
             </div>
         <?php else: ?>
             <div class="status-container">
@@ -339,55 +420,64 @@ if (!$is_success && strpos(strtolower($error_msg), "unknown database") !== false
             <?php endif; ?>
         </ul>
 
-        <?php if (!$is_success): ?>
-            <?php if (!$db_created): ?>
-                <div class="guide-box">
-                    <div class="guide-title">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                        Database "peliharaan" belum dibuat
-                    </div>
-                    <ol class="guide-steps">
-                        <li>Buka phpMyAdmin di browser Anda: <a href="http://localhost/phpmyadmin" target="_blank" style="color: #60a5fa; text-decoration: underline;">localhost/phpmyadmin</a></li>
-                        <li>Klik menu <strong>SQL</strong> atau pilih tab <strong>Databases</strong>.</li>
-                        <li>Jalankan perintah SQL berikut untuk membuat database:
-                            <div class="code-block">
-                                <span id="sql-cmd">CREATE DATABASE peliharaan;</span>
-                                <button class="btn-copy" onclick="copySql()">Salin</button>
-                            </div>
-                        </li>
-                        <li>Setelah database berhasil dibuat, refresh halaman ini untuk mencoba kembali.</li>
-                    </ol>
-                </div>
-            <?php else: ?>
-                <div class="guide-box" style="background: rgba(239, 68, 68, 0.05); border-color: rgba(239, 68, 68, 0.2);">
-                    <div class="guide-title" style="color: #fca5a5;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                        Langkah Troubleshooting
-                    </div>
-                    <ol class="guide-steps">
-                        <li>Pastikan aplikasi <strong>XAMPP</strong> Anda sudah aktif, khususnya modul <strong>Apache</strong> dan <strong>MySQL</strong>.</li>
-                        <li>Periksa kembali username dan password MySQL Anda di dalam berkas <a href="config.php" style="color: #60a5fa; text-decoration: underline;">config.php</a>.</li>
-                    </ol>
-                </div>
-            <?php endif; ?>
-            
-            <div style="margin-top: 1.5rem;">
-                <button onclick="window.location.reload();" class="btn-action">Coba Hubungkan Kembali</button>
-            </div>
-        <?php else: ?>
+        <?php if ($is_success && $tables_exist): ?>
             <div class="guide-box" style="background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2);">
                 <div class="guide-title" style="color: #a7f3d0;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                    Cara Menggunakan
+                    Aplikasi Siap Digunakan!
                 </div>
-                <div style="font-size: 0.875rem; line-height: 1.6; color: #d1d5db;">
-                    Anda dapat menggunakan variable koneksi <code style="font-family: monospace; color: #38bdf8; background: rgba(0,0,0,0.2); padding: 0.1rem 0.3rem; border-radius: 4px;">$pdo</code> di file PHP lainnya dengan melakukan import:
-                    <div class="code-block" style="color: #a7f3d0;">
-                        <span>require_once 'config.php';</span>
+                <div style="font-size: 0.875rem; line-height: 1.6; color: #d1d5db; margin-bottom: 1rem;">
+                    Semua sistem terhubung dengan sempurna. Anda dapat masuk menggunakan akun administrator default:
+                    <div style="margin-top: 0.5rem; background: rgba(0,0,0,0.25); padding: 0.5rem; border-radius: 8px; font-family: monospace; font-size: 0.85rem;">
+                        Username: <span style="color: #a5b4fc;">admin</span><br>
+                        Password: <span style="color: #a5b4fc;">admin123</span>
                     </div>
                 </div>
+                <a href="index.php" class="btn-action" style="background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);">Ke Halaman Utama</a>
+            </div>
+        <?php else: ?>
+            <!-- Setup & Guide Box -->
+            <div class="guide-box" style="background: rgba(16, 185, 129, 0.03); border-color: rgba(16, 185, 129, 0.15);">
+                <div class="guide-title" style="color: #a7f3d0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                    Setup Database Satu-Klik (Direkomendasikan)
+                </div>
+                <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.5;">
+                    Sistem dapat membuat database dan tabel-tabel peliharaan secara otomatis dengan mengeksekusi migrasi SQL yang tersedia.
+                </p>
+                <form method="POST" action="test_connection.php">
+                    <input type="hidden" name="action" value="setup_db">
+                    <button type="submit" class="btn-action" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+                        Inisialisasi Database Otomatis
+                    </button>
+                </form>
+            </div>
+
+            <!-- Manual Guide Fallback -->
+            <div class="guide-box">
+                <div class="guide-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    Cara Inisialisasi Manual
+                </div>
+                <ol class="guide-steps">
+                    <li>Buka phpMyAdmin: <a href="http://localhost/phpmyadmin" target="_blank" style="color: #60a5fa; text-decoration: underline;">localhost/phpmyadmin</a></li>
+                    <li>Jalankan perintah SQL untuk membuat database:
+                        <div class="code-block">
+                            <span id="sql-cmd">CREATE DATABASE peliharaan;</span>
+                            <button class="btn-copy" onclick="copySql()">Salin</button>
+                        </div>
+                    </li>
+                    <li>Impor skrip database dari berkas <code>database.sql</code> ke database yang baru dibuat.</li>
+                </ol>
+            </div>
+
+            <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                <button onclick="window.location.reload();" class="btn-action" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: none;">
+                    Coba Hubungkan Kembali
+                </button>
             </div>
         <?php endif; ?>
+
     </div>
 </div>
 

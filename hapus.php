@@ -18,6 +18,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+// Validate CSRF token
+$csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
+if (!validate_csrf_token($csrf_token)) {
+    $_SESSION['error'] = "Keamanan CSRF tidak valid. Silakan coba lagi.";
+    header("Location: dashboard.php");
+    exit;
+}
+
 // Check if id_hewan is provided
 if (!isset($_POST['id_hewan']) || trim($_POST['id_hewan']) === '') {
     $_SESSION['error'] = "ID Hewan tidak ditentukan!";
